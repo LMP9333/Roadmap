@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IT Roadmap Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #16181f;
+    --surface2: #1e2029;
+    --border: #2a2d3a;
+    --accent: #5b6af0;
+    --accent2: #f06a5b;
+    --accent3: #5bf0b8;
+    --text: #e8eaf2;
+    --text-dim: #7a7e9a;
+    --clash: #f06a5b;
+    --Q1: #5b6af0;
+    --Q2: #a06af0;
+    --Q3: #f06a5b;
+    --Q4: #5bf0b8;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 100;
+  }
+  header h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -.5px; }
+  header h1 span { color: var(--accent); }
+  .header-actions { display: flex; gap: 10px; }
+  button {
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: .8rem;
+    border: none; cursor: pointer; border-radius: var(--radius);
+    padding: 8px 16px; transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.15); }
+  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text-dim); }
+  .btn-danger { background: transparent; color: var(--clash); border: 1px solid var(--clash); }
+  .btn-danger:hover { background: var(--clash); color: #fff; }
+
+  /* ── YEAR TABS ── */
+  .year-bar {
+    display: flex; gap: 8px; padding: 14px 32px; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .year-btn {
+    padding: 6px 20px; border-radius: 20px; font-size: .8rem;
+    background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border);
+  }
+  .year-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; flex-direction: column; }
+  .content { padding: 24px 32px; display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── CLASH BANNER ── */
+  .clash-banner {
+    background: rgba(240,106,91,.12); border: 1px solid rgba(240,106,91,.4);
+    border-radius: var(--radius); padding: 12px 18px;
+    font-size: .82rem; color: var(--clash); display: flex; align-items: center; gap: 10px;
+  }
+  .clash-banner strong { color: var(--clash); }
+
+  /* ── GANTT ── */
+  .gantt-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  .gantt {
+    min-width: 900px; background: var(--surface);
+  }
+
+  /* header row */
+  .gantt-head {
+    display: grid;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .gantt-head-cell {
+    padding: 10px 0; text-align: center; font-size: .72rem;
+    font-weight: 700; letter-spacing: .08em; color: var(--text-dim);
+    border-right: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+  }
+  .gantt-head-cell:last-child { border-right: none; }
+  .gantt-head-cell.quarter { color: var(--text); font-size: .78rem; }
+  .gantt-head-cell.q1 { color: var(--Q1); }
+  .gantt-head-cell.q2 { color: var(--Q2); }
+  .gantt-head-cell.q3 { color: var(--Q3); }
+  .gantt-head-cell.q4 { color: var(--Q4); }
+
+  /* team group */
+  .team-group {}
+  .team-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px; background: var(--surface2);
+    border-bottom: 1px solid var(--border); cursor: pointer;
+    user-select: none;
+  }
+  .team-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .team-name { font-weight: 700; font-size: .88rem; }
+  .team-count { font-size: .75rem; color: var(--text-dim); margin-left: auto; font-family: 'DM Mono', monospace; }
+  .clash-badge {
+    font-size: .7rem; background: rgba(240,106,91,.2); color: var(--clash);
+    border-radius: 20px; padding: 2px 8px; font-weight: 700;
+  }
+  .team-toggle { color: var(--text-dim); font-size: .8rem; margin-left: 6px; }
+
+  /* project row */
+  .project-row {
+    display: grid; align-items: center;
+    border-bottom: 1px solid var(--border); min-height: 52px;
+    transition: background .1s;
+  }
+  .project-row:hover { background: rgba(255,255,255,.025); }
+  .project-row:last-child { border-bottom: none; }
+  .project-label {
+    padding: 8px 18px; font-size: .82rem; line-height: 1.3;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .project-label .proj-name { font-weight: 600; }
+  .project-label .proj-owner {
+    font-size: .72rem; color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+  .project-label .clash-tag {
+    font-size: .68rem; color: var(--clash); font-weight: 700;
+  }
+  .project-label .proj-actions { display: flex; gap: 6px; margin-top: 4px; }
+  .proj-actions button { padding: 2px 8px; font-size: .68rem; border-radius: 4px; }
+
+  /* grid cells */
+  .grid-cell {
+    border-right: 1px solid var(--border); height: 100%; min-height: 52px;
+    position: relative;
+  }
+  .grid-cell:last-child { border-right: none; }
+  .grid-cell.month-end { border-right: 1px solid rgba(255,255,255,.08); }
+
+  /* bar */
+  .bar-row {
+    position: relative; height: 52px; display: flex; align-items: center;
+  }
+  .bar {
+    position: absolute; height: 26px; border-radius: 5px;
+    display: flex; align-items: center; padding: 0 10px;
+    font-size: .72rem; font-weight: 700; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; cursor: pointer; transition: filter .15s;
+    border: 1.5px solid transparent;
+    font-family: 'DM Mono', monospace;
+  }
+  .bar:hover { filter: brightness(1.25); }
+  .bar.clash-bar { border-color: var(--clash) !important; box-shadow: 0 0 0 2px rgba(240,106,91,.25); }
+
+  /* ── MODAL ── */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.65);
+    display: flex; align-items: center; justify-content: center; z-index: 200;
+    animation: fadeIn .15s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 32px; width: 480px; max-width: 95vw;
+    animation: slideUp .18s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal h2 { font-size: 1.1rem; margin-bottom: 20px; font-weight: 800; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: .75rem; color: var(--text-dim); font-weight: 600; letter-spacing: .05em; }
+  input, select, textarea {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text); font-family: 'Syne', sans-serif;
+    font-size: .85rem; padding: 9px 12px; outline: none; transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+  /* ── RESOURCE VIEW ── */
+  .resource-section { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .section-title {
+    padding: 14px 20px; font-weight: 800; font-size: .9rem;
+    border-bottom: 1px solid var(--border); background: var(--surface2);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .resource-grid { display: grid; grid-template-columns: 200px 1fr; }
+  .res-label { padding: 8px 16px; font-size: .8rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .res-label:last-child { border-bottom: none; }
+  .res-bar-row { border-bottom: 1px solid var(--border); padding: 6px 0; position: relative; min-height: 38px; }
+  .res-bar-row:last-child { border-bottom: none; }
+  .res-mini-bar {
+    position: absolute; height: 18px; border-radius: 3px;
+    font-size: .66rem; font-weight: 700; display: flex; align-items: center; padding: 0 6px;
+    top: 50%; transform: translateY(-50%); white-space: nowrap; overflow: hidden;
+    font-family: 'DM Mono', monospace; cursor: default;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-row { padding: 22px 18px; color: var(--text-dim); font-size: .82rem; font-style: italic; }
+
+  /* ── TEAM MGMT ── */
+  .teams-section { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .teams-list { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 20px; }
+  .team-chip {
+    display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+    font-size: .8rem;
+  }
+  .team-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .chip-del { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1rem; padding: 0 0 0 4px; }
+  .chip-del:hover { color: var(--clash); }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 4px; padding: 0 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .tab { padding: 12px 20px; font-size: .82rem; font-weight: 700; cursor: pointer; color: var(--text-dim); border-bottom: 2px solid transparent; transition: all .15s; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useEffect, useCallback, useMemo } = React;
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const QUARTERS = ['Q1','Q2','Q3','Q4'];
+const MONTH_DAYS = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+const PALETTE = [
+  '#5b6af0','#a06af0','#f06a5b','#5bf0b8','#f0c45b','#5bc8f0',
+  '#e05bf0','#f08a5b','#5bf075','#f05b9a','#5b9af0','#c4f05b'
+];
+
+const DEFAULT_TEAMS = [
+  { id: 't1', name: 'Infrastructure', color: '#5b6af0' },
+  { id: 't2', name: 'Development', color: '#a06af0' },
+  { id: 't3', name: 'Security', color: '#f06a5b' },
+  { id: 't4', name: 'Data & Analytics', color: '#5bf0b8' },
+];
+
+const DEFAULT_PROJECTS = [
+  { id:'p1', name:'Cloud Migration Phase 1', team:'t1', owner:'Alice M.', startMonth:0, endMonth:2, year:2025 },
+  { id:'p2', name:'ERP Upgrade', team:'t2', owner:'Bob K.', startMonth:1, endMonth:5, year:2025 },
+  { id:'p3', name:'Zero Trust Rollout', team:'t3', owner:'Clara D.', startMonth:2, endMonth:4, year:2025 },
+  { id:'p4', name:'Data Warehouse v2', team:'t4', owner:'Dan P.', startMonth:3, endMonth:8, year:2025 },
+  { id:'p5', name:'Network Refresh', team:'t1', owner:'Alice M.', startMonth:1, endMonth:3, year:2025 },
+  { id:'p6', name:'Mobile App v3', team:'t2', owner:'Eve S.', startMonth:6, endMonth:10, year:2025 },
+  { id:'p7', name:'SOC2 Compliance', team:'t3', owner:'Clara D.', startMonth:3, endMonth:7, year:2025 },
+  { id:'p8', name:'BI Dashboard', team:'t4', owner:'Frank L.', startMonth:9, endMonth:11, year:2025 },
+];
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function uid() { return 'p' + Math.random().toString(36).slice(2,9); }
+
+// days from start of year
+function dayOfYear(month, day=1) {
+  let d = 0;
+  for(let i=0;i<month;i++) d += MONTH_DAYS[i];
+  return d + day - 1;
+}
+const DAYS_IN_YEAR = 365;
+
+function barStyle(startMonth, endMonth, color, clash=false) {
+  const left = (dayOfYear(startMonth) / DAYS_IN_YEAR) * 100;
+  const width = ((dayOfYear(endMonth, MONTH_DAYS[endMonth]) - dayOfYear(startMonth)) / DAYS_IN_YEAR) * 100;
+  return {
+    left: left + '%',
+    width: Math.max(width, 2) + '%',
+    background: color + (clash ? '' : 'cc'),
+    borderColor: clash ? '#f06a5b' : 'transparent',
+  };
+}
+
+function detectClashes(projects) {
+  // clash = same owner, overlapping months
+  const clashIds = new Set();
+  for(let i=0;i<projects.length;i++) {
+    for(let j=i+1;j<projects.length;j++) {
+      const a = projects[i], b = projects[j];
+      if(a.owner !== b.owner || a.year !== b.year || !a.owner) continue;
+      // overlap check
+      if(a.startMonth <= b.endMonth && b.startMonth <= a.endMonth) {
+        clashIds.add(a.id);
+        clashIds.add(b.id);
+      }
+    }
+  }
+  return clashIds;
+}
+
+// ── COMPONENTS ─────────────────────────────────────────────────────────────
+
+function ProjectModal({ project, teams, onSave, onClose }) {
+  const [form, setForm] = useState(project || {
+    name:'', team: teams[0]?.id || '', owner:'', startMonth:0, endMonth:2
+  });
+  const set = (k,v) => setForm(f => ({...f, [k]:v}));
+
+  return React.createElement('div', { className:'overlay', onClick: e => e.target.className==='overlay'&&onClose() },
+    React.createElement('div', { className:'modal' },
+      React.createElement('h2', null, project?.id ? '✏️ Edit Project' : '＋ Add Project'),
+      React.createElement('div', { className:'form-grid' },
+        React.createElement('div', { className:'form-group full' },
+          React.createElement('label', null, 'PROJECT NAME'),
+          React.createElement('input', { value:form.name, placeholder:'e.g. Cloud Migration Phase 2', onChange:e=>set('name',e.target.value) })
+        ),
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', null, 'TEAM'),
+          React.createElement('select', { value:form.team, onChange:e=>set('team',e.target.value) },
+            teams.map(t => React.createElement('option', {key:t.id, value:t.id}, t.name))
+          )
+        ),
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', null, 'OWNER / RESOURCE'),
+          React.createElement('input', { value:form.owner, placeholder:'e.g. Alice M.', onChange:e=>set('owner',e.target.value) })
+        ),
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', null, 'START MONTH'),
+          React.createElement('select', { value:form.startMonth, onChange:e=>set('startMonth',+e.target.value) },
+            MONTHS.map((m,i) => React.createElement('option',{key:i,value:i},m))
+          )
+        ),
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', null, 'END MONTH'),
+          React.createElement('select', { value:form.endMonth, onChange:e=>set('endMonth',+e.target.value) },
+            MONTHS.map((m,i) => React.createElement('option',{key:i,value:i},m))
+          )
+        ),
+      ),
+      React.createElement('div', { className:'modal-actions' },
+        React.createElement('button', { className:'btn-ghost', onClick:onClose }, 'Cancel'),
+        React.createElement('button', { className:'btn-primary', onClick:()=>{
+          if(!form.name || form.startMonth > form.endMonth) return alert('Please check name and dates.');
+          onSave(form);
+        }}, 'Save Project')
+      )
+    )
+  );
+}
+
+function TeamModal({ teams, onSave, onClose }) {
+  const [name, setName] = useState('');
+  const [color, setColor] = useState(PALETTE[teams.length % PALETTE.length]);
+  return React.createElement('div', { className:'overlay', onClick:e=>e.target.className==='overlay'&&onClose() },
+    React.createElement('div', { className:'modal' },
+      React.createElement('h2', null, '＋ Add Team'),
+      React.createElement('div', { className:'form-grid' },
+        React.createElement('div', { className:'form-group full' },
+          React.createElement('label', null, 'TEAM NAME'),
+          React.createElement('input', { value:name, placeholder:'e.g. Networking', onChange:e=>setName(e.target.value) })
+        ),
+        React.createElement('div', { className:'form-group' },
+          React.createElement('label', null, 'COLOR'),
+          React.createElement('input', { type:'color', value:color, onChange:e=>setColor(e.target.value), style:{height:40,padding:2} })
+        ),
+      ),
+      React.createElement('div', { className:'modal-actions' },
+        React.createElement('button', { className:'btn-ghost', onClick:onClose }, 'Cancel'),
+        React.createElement('button', { className:'btn-primary', onClick:()=>{ if(name) onSave({id:'t'+uid(),name,color}); }}, 'Add Team')
+      )
+    )
+  );
+}
+
+// ── GANTT CHART ────────────────────────────────────────────────────────────
+function GanttChart({ projects, teams, year, onEdit, onDelete }) {
+  const clashIds = useMemo(() => detectClashes(projects.filter(p=>p.year===year)), [projects, year]);
+  const yearProjects = projects.filter(p => p.year === year);
+
+  // column widths: label 220px, then full bar area
+  const LABEL_W = 220;
+
+  return React.createElement('div', { className:'gantt-wrap' },
+    React.createElement('div', { className:'gantt' },
+      // ── HEAD ──
+      React.createElement('div', { className:'gantt-head', style:{ gridTemplateColumns: `${LABEL_W}px 1fr` } },
+        React.createElement('div', { className:'gantt-head-cell', style:{textAlign:'left',paddingLeft:18} }, 'PROJECT'),
+        React.createElement('div', { style:{ display:'grid', gridTemplateColumns:'repeat(4,1fr)' } },
+          ['Q1','Q2','Q3','Q4'].map((q,qi) =>
+            React.createElement('div', {
+              key:q, className:`gantt-head-cell quarter ${q.toLowerCase()}`,
+              style:{ borderRight: qi<3?'1px solid var(--border)':undefined }
+            },
+              React.createElement('div', null, q),
+              React.createElement('div', { style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',opacity:.6,fontSize:'.65rem',marginTop:2}},
+                MONTHS.slice(qi*3, qi*3+3).map(m => React.createElement('div',{key:m,style:{textAlign:'center'}},m))
+              )
+            )
+          )
+        )
+      ),
+      // ── ROWS BY TEAM ──
+      teams.map(team => {
+        const tProjects = yearProjects.filter(p => p.team === team.id);
+        return React.createElement('div', { key:team.id, className:'team-group' },
+          // team header
+          React.createElement('div', { className:'team-header' },
+            React.createElement('div', { className:'team-dot', style:{background:team.color} }),
+            React.createElement('div', { className:'team-name' }, team.name),
+            tProjects.some(p=>clashIds.has(p.id)) &&
+              React.createElement('div', { className:'clash-badge' }, '⚠ Resource Clash'),
+            React.createElement('div', { className:'team-count' }, tProjects.length + ' projects')
+          ),
+          // project rows
+          tProjects.length === 0
+            ? React.createElement('div', { className:'empty-row' }, 'No projects for this team this year.')
+            : tProjects.map(proj => {
+                const isClash = clashIds.has(proj.id);
+                return React.createElement('div', { key:proj.id, className:'project-row',
+                  style:{ gridTemplateColumns:`${LABEL_W}px 1fr`, background: isClash?'rgba(240,106,91,.04)':undefined }
+                },
+                  // label
+                  React.createElement('div', { className:'project-label' },
+                    React.createElement('div', { className:'proj-name' }, proj.name),
+                    React.createElement('div', { className:'proj-owner' }, proj.owner || '—'),
+                    isClash && React.createElement('div', { className:'clash-tag' }, '⚠ Clash with another project'),
+                    React.createElement('div', { className:'proj-actions' },
+                      React.createElement('button', { className:'btn-ghost', onClick:()=>onEdit(proj) }, 'Edit'),
+                      React.createElement('button', { className:'btn-danger', onClick:()=>onDelete(proj.id) }, '✕')
+                    )
+                  ),
+                  // bar area
+                  React.createElement('div', { className:'bar-row' },
+                    React.createElement('div', {
+                      className: 'bar' + (isClash?' clash-bar':''),
+                      style: barStyle(proj.startMonth, proj.endMonth, team.color, isClash),
+                      title: `${proj.name} (${MONTHS[proj.startMonth]}–${MONTHS[proj.endMonth]})`,
+                    }, MONTHS[proj.startMonth] + '–' + MONTHS[proj.endMonth])
+                  )
+                );
+              })
+        );
+      })
+    )
+  );
+}
+
+// ── RESOURCE VIEW ──────────────────────────────────────────────────────────
+function ResourceView({ projects, teams, year }) {
+  const yearProjects = projects.filter(p => p.year === year);
+  const owners = [...new Set(yearProjects.map(p=>p.owner).filter(Boolean))].sort();
+
+  return React.createElement('div', { className:'resource-section' },
+    React.createElement('div', { className:'section-title' }, '👤 Resource Load by Person'),
+    React.createElement('div', null,
+      owners.length === 0
+        ? React.createElement('div', { className:'empty-row', style:{padding:20} }, 'No resource owners assigned yet.')
+        : owners.map(owner => {
+            const ops = yearProjects.filter(p=>p.owner===owner);
+            const clashIds = detectClashes(yearProjects);
+            return React.createElement('div', { key:owner, className:'resource-grid', style:{borderBottom:'1px solid var(--border)'} },
+              React.createElement('div', { className:'res-label' },
+                React.createElement('span', null, owner),
+                ops.some(p=>clashIds.has(p.id)) && React.createElement('span',{className:'clash-badge'},'⚠')
+              ),
+              React.createElement('div', { style:{position:'relative',minHeight:38,padding:'6px 0'} },
+                ops.map(proj => {
+                  const team = teams.find(t=>t.id===proj.team);
+                  const isClash = clashIds.has(proj.id);
+                  return React.createElement('div', {
+                    key:proj.id,
+                    className:'res-mini-bar',
+                    style:{
+                      left: (dayOfYear(proj.startMonth)/DAYS_IN_YEAR*100)+'%',
+                      width: Math.max((dayOfYear(proj.endMonth,MONTH_DAYS[proj.endMonth])-dayOfYear(proj.startMonth))/DAYS_IN_YEAR*100,2)+'%',
+                      background: (team?.color||'#5b6af0') + 'bb',
+                      border: isClash?'1.5px solid var(--clash)':undefined,
+                      top:'50%',
+                    },
+                    title: proj.name
+                  }, proj.name.length>18 ? proj.name.slice(0,16)+'…' : proj.name);
+                })
+              )
+            );
+          })
+    )
+  );
+}
+
+// ── MAIN APP ───────────────────────────────────────────────────────────────
+function App() {
+  const [teams, setTeams]       = useState(() => JSON.parse(localStorage.getItem('teams')||'null') || DEFAULT_TEAMS);
+  const [projects, setProjects] = useState(() => JSON.parse(localStorage.getItem('projects')||'null') || DEFAULT_PROJECTS);
+  const [year, setYear]         = useState(2025);
+  const [tab, setTab]           = useState('roadmap');
+  const [modal, setModal]       = useState(null); // null | 'add' | 'edit' | 'team'
+  const [editProj, setEditProj] = useState(null);
+
+  useEffect(() => { localStorage.setItem('teams', JSON.stringify(teams)); }, [teams]);
+  useEffect(() => { localStorage.setItem('projects', JSON.stringify(projects)); }, [projects]);
+
+  const yearProjects = projects.filter(p => p.year === year);
+  const clashIds = useMemo(() => detectClashes(yearProjects), [yearProjects]);
+  const clashProjects = yearProjects.filter(p => clashIds.has(p.id));
+
+  function saveProject(form) {
+    if(form.id) {
+      setProjects(ps => ps.map(p => p.id === form.id ? {...form} : p));
+    } else {
+      setProjects(ps => [...ps, { ...form, id: uid(), year }]);
+    }
+    setModal(null); setEditProj(null);
+  }
+  function deleteProject(id) {
+    if(confirm('Delete this project?')) setProjects(ps => ps.filter(p => p.id !== id));
+  }
+  function addTeam(team) {
+    setTeams(ts => [...ts, team]);
+    setModal(null);
+  }
+  function deleteTeam(id) {
+    if(confirm('Remove team? Projects will remain but lose team assignment.'))
+      setTeams(ts => ts.filter(t => t.id !== id));
+  }
+
+  const years = [...new Set([2024,2025,2026,...projects.map(p=>p.year)])].sort();
+
+  return React.createElement('div', { className:'app' },
+    // HEADER
+    React.createElement('header', null,
+      React.createElement('h1', null, 'IT Roadmap ', React.createElement('span',null,'Planner')),
+      React.createElement('div', { className:'header-actions' },
+        React.createElement('button', { className:'btn-ghost', onClick:()=>setModal('team') }, '+ Add Team'),
+        React.createElement('button', { className:'btn-primary', onClick:()=>{ setEditProj(null); setModal('add'); } }, '+ Add Project')
+      )
+    ),
+
+    // YEAR TABS
+    React.createElement('div', { className:'year-bar' },
+      years.map(y =>
+        React.createElement('button', { key:y, className:'year-btn'+(year===y?' active':''), onClick:()=>setYear(y) }, y)
+      ),
+      React.createElement('button', { className:'year-btn', onClick:()=>setYear(Math.max(...years)+1) }, '+ Year')
+    ),
+
+    // VIEW TABS
+    React.createElement('div', { className:'tabs' },
+      ['roadmap','resources','teams'].map(t =>
+        React.createElement('div', { key:t, className:'tab'+(tab===t?' active':''), onClick:()=>setTab(t) },
+          t === 'roadmap' ? '📊 Roadmap' : t === 'resources' ? '👤 Resources' : '🏷 Teams'
+        )
+      )
+    ),
+
+    // CONTENT
+    React.createElement('div', { className:'content' },
+      // clash banner
+      tab === 'roadmap' && clashProjects.length > 0 &&
+        React.createElement('div', { className:'clash-banner' },
+          '⚠',
+          React.createElement('span', null,
+            React.createElement('strong', null, clashProjects.length + ' resource clash' + (clashProjects.length>1?'es':'')),
+            ' detected in ' + year + ': ',
+            [...new Set(clashProjects.map(p=>p.owner))].join(', '),
+            ' are assigned to overlapping projects at the same time.'
+          )
+        ),
+
+      tab === 'roadmap' && React.createElement(GanttChart, { projects, teams, year, onEdit: p=>{ setEditProj(p); setModal('edit'); }, onDelete: deleteProject }),
+      tab === 'resources' && React.createElement(ResourceView, { projects, teams, year }),
+      tab === 'teams' && React.createElement('div', { className:'teams-section' },
+        React.createElement('div', { className:'section-title' }, '🏷 IT Teams'),
+        React.createElement('div', { className:'teams-list' },
+          teams.map(t =>
+            React.createElement('div', { key:t.id, className:'team-chip' },
+              React.createElement('div', { className:'dot', style:{background:t.color} }),
+              t.name,
+              React.createElement('button', { className:'chip-del', onClick:()=>deleteTeam(t.id) }, '×')
+            )
+          ),
+          React.createElement('button', { className:'btn-primary', style:{borderRadius:20,fontSize:'.8rem'}, onClick:()=>setModal('team') }, '+ Add Team')
+        )
+      )
+    ),
+
+    // MODALS
+    (modal === 'add' || modal === 'edit') && React.createElement(ProjectModal, {
+      project: modal === 'edit' ? editProj : null,
+      teams,
+      onSave: saveProject,
+      onClose: ()=>{ setModal(null); setEditProj(null); }
+    }),
+    modal === 'team' && React.createElement(TeamModal, { teams, onSave: addTeam, onClose:()=>setModal(null) })
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
